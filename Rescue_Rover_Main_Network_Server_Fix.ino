@@ -1,27 +1,3 @@
-/*
-  Rescue Rover - Main Controller Firmware
-  Board: ESP32 DevKit V1 (classic ESP32-WROOM-32, 38-pin)
-  Arduino-ESP32 core: 3.x (prepared for the user's 3.3.12 installation)
-
-  Features in this baseline:
-  - Router STA mode (DHCP; no fixed IP)
-  - HTTP dashboard on port 80
-  - WebSocket telemetry on port 81
-  - 2 x BTS7960 control (left side + right side; two motors per side in parallel)
-  - MPU6050 raw acceleration / gyro / temperature reading over I2C
-  - HC-SR04 distance reading (ECHO MUST use a 5V-to-3.3V divider)
-  - UART2 JSON communication with ESP32-S3-CAM
-  - Full-duplex I2S audio: INMP441 microphone + MAX98357A speaker amp
-  - 16 kHz / 16-bit / mono PCM over WebSocket binary frames
-  - Motor-command timeout / safe stop
-
-  IMPORTANT:
-  - Do the first test with motors disconnected or wheels lifted.
-  - Verify the BTS7960 module's 3.3V input compatibility and current rating.
-  - One BTS7960 per side means both motors on that side receive the same command.
-  - This is a manual-control + sensor + camera-communication baseline, not yet
-    a complete autonomous navigation / mapping / rulebook implementation.
-*/
 
 #include <WiFi.h>
 #include <WebServer.h>
@@ -69,10 +45,7 @@ static const int PIN_CAMERA_UART_RX = 13;
 static const int PIN_CAMERA_UART_TX = 14;
 static const uint32_t UART_BAUD = 115200;
 
-// Shared I2S full-duplex bus for INMP441 + MAX98357A.
-// GPIO5 and GPIO15 are ESP32 strapping pins; peripheral clock pins connected
-// here are inputs, so do not add external pull resistors that alter reset levels.
-// GPIO23 is a normal output-capable pin and is used for MAX98357A data output.
+
 static const int PIN_I2S_BCLK = 5;   // shared: INMP441 SCK + MAX98357A BCLK
 static const int PIN_I2S_WS   = 15;  // shared: INMP441 WS  + MAX98357A LRC
 static const int PIN_I2S_DOUT = 23; // ESP32 -> MAX98357A DIN
@@ -764,7 +737,7 @@ void onWebSocketEvent(uint8_t clientNum, WStype_t type, uint8_t *payload, size_t
   }
 
   if (type == WStype_BIN) {
-    // Browser sends exactly 20 ms of mono PCM16: 320 samples = 640 bytes.
+    
     if (audioStreamingEnabled && audioClientId == clientNum &&
         payload != nullptr && length == AUDIO_PACKET_BYTES && speakerQueue != nullptr) {
       AudioPacket packet;
@@ -784,7 +757,7 @@ void onWebSocketEvent(uint8_t clientNum, WStype_t type, uint8_t *payload, size_t
       Serial.println("Audio WebSocket client disconnected.");
     }
     if (webSocket.connectedClients() == 0) {
-      // No active dashboard client: fail safe and stop the drive output.
+      
       stopMotors();
     }
   }
@@ -794,8 +767,7 @@ void onWebSocketEvent(uint8_t clientNum, WStype_t type, uint8_t *payload, size_t
 void beginWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
-  // Treat credentials as missing only when either field is actually empty.
-  // A real network name such as "OPPO_A5s" must not be rejected.
+  
   if (strlen(WIFI_SSID) == 0 || strlen(WIFI_PASSWORD) == 0) {
     wifiConfigured = false;
     Serial.println("Wi-Fi SSID or password is empty. Set both near the top of the sketch.");
@@ -880,8 +852,7 @@ void setup() {
   audioReady = initAudioSystem();
   Serial.printf("Audio hardware ready: %s\n", audioReady ? "YES" : "NO");
 
-  // Start Wi-Fi first. HTTP and WebSocket servers will start only after
-  // the router connection is established and DHCP has assigned an IP.
+  
   beginWiFi();
 
   lastDriveCommandMs = millis();
