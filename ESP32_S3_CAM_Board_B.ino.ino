@@ -1,16 +1,3 @@
-/*
-  =============================================================================
-  Rescue Rover - ESP32-S3-CAM (Board B) Complete Standalone Firmware
-  Board: ESP32S3 Dev Module (PSRAM: OPI PSRAM)
-  Features:
-  - Self-contained MJPEG Stream Server (Port 81 /stream) - No external files!
-  - Web API & CORS-enabled Status/Control Server (Port 80)
-  - Two-Way 16kHz I2S Audio Intercom (/api/audio/rx, /api/audio/tx, chime)
-  - UART1 Bridge on TX1=GPIO 1, RX1=GPIO 2 (PING, CHIME, STATUS & Auto-IP sync)
-  - Onboard RGB LED (GPIO 48): Green=Wi-Fi Connected, Blue=AP Failover, Red=Error
-  =============================================================================
-*/
-
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <WebServer.h>
